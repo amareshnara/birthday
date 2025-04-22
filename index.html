@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Seethu</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Dancing+Script&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/flipdown@0.3.2/dist/flipdown.css">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Pacifico', cursive;
+      text-align: center;
+      color: #fff;
+      transition: background 1s ease;
+    }
+
+    body.timer-background {
+      background: url('timer-background.jpg') no-repeat center center fixed;
+      background-size: cover;
+    }
+
+    #cake, #mainContent, #confetti-canvas, #countdown {
+      display: none;
+    }
+
+    #countdown {
+      position: absolute;
+      top: 3%;
+      left: 2%;
+      text-align: left;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 30px 25px;
+      border-radius: 16px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.6);
+      width: 460px;
+    }
+
+    #countdown h1 {
+      font-family: 'Dancing Script', cursive;
+      font-size: 3.2em;
+      margin: 0 0 20px;
+      white-space: nowrap;
+      text-align: center;
+      width: 100%;
+    }
+
+    .flipdown {
+      transform: scale(0.92);
+      transform-origin: left;
+    }
+
+    #cake {
+      margin-top: 40px;
+      animation: fadeIn 2s forwards;
+    }
+
+    body:not(.timer-background) {
+      background: linear-gradient(to bottom right, #ffe6f0, #ffccf9);
+      color: #333;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.8); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .carousel-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 40px;
+    }
+
+    .carousel-3d {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      perspective: 1000px;
+      overflow: hidden;
+      width: 100%;
+      max-width: 900px;
+      height: 340px;
+      position: relative;
+    }
+
+    .carousel-item {
+      position: absolute;
+      width: 260px;
+      height: 320px;
+      border-radius: 12px;
+      transition: transform 0.6s ease, opacity 0.6s ease, filter 0.6s ease;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+      object-fit: cover;
+      opacity: 0;
+      filter: blur(2px);
+    }
+
+    .carousel-item.active {
+      transform: translateX(0px) scale(1.1);
+      z-index: 3;
+      opacity: 1;
+      filter: blur(0);
+    }
+
+    .carousel-item.left {
+      transform: translateX(-280px) scale(0.9) rotateY(20deg);
+      z-index: 2;
+      opacity: 0.7;
+    }
+
+    .carousel-item.right {
+      transform: translateX(280px) scale(0.9) rotateY(-20deg);
+      z-index: 2;
+      opacity: 0.7;
+    }
+
+    .arrow {
+      font-size: 2em;
+      cursor: pointer;
+      user-select: none;
+      margin: 0 15px;
+      color: white;
+    }
+
+    .letter {
+      font-family: 'Dancing Script', cursive;
+      font-size: 1.8em;
+      white-space: pre-line;
+      line-height: 1.8;
+      margin-bottom: 30px;
+    }
+
+    .letter-line {
+      margin-bottom: 12px;
+    }
+
+    /* Password overlay */
+    #overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.9);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      flex-direction: column;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    #overlay h2 {
+      font-size: 2em;
+      margin-bottom: 10px;
+    }
+
+    #overlay input {
+      font-size: 1.2em;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+    }
+
+    #overlay button {
+      margin-top: 20px;
+      padding: 10px 25px;
+      font-size: 1.2em;
+      border-radius: 10px;
+      background: #3498db;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    #error {
+      color: red;
+      margin-top: 10px;
+      font-size: 1.1em;
+    }
+  </style>
+</head>
+<body class="timer-background">
+
+<div id="overlay">
+  <h2>🔒 Enter Password!</h2>
+  <input type="password" id="passwordInput" placeholder="Enter password..." />
+  <button onclick="checkPassword()">Unlock</button>
+  <div id="error"></div>
+</div>
+
+<div id="countdown">
+  <h1>🎉 Time until 23 🎉</h1>
+  <div id="flipdown" class="flipdown"></div>
+</div>
+
+<canvas id="confetti-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;"></canvas>
+
+<div id="cake">
+  <img src="cake.jpg" alt="Birthday Cake" width="200">
+</div>
+
+<div id="mainContent" style="background: rgba(0, 0, 0, 0.5); padding: 40px; border-radius: 20px; max-width: 900px; margin: 60px auto; text-align: center; color: #fff; text-shadow: 1px 1px 8px rgba(0,0,0,0.8);">
+  <h1 style="font-size: 3.5em; font-family: 'Dancing Script', cursive; margin-bottom: 30px;">🎂 Happy Birthday Seethu ! 🎈</h1>
+
+  <div class="letter">
+    <div class="letter-line">Happiest Birthday to one of the sweetest and cutest women I know!</div>
+    <div class="letter-line">You are the kind of person who brings sunshine wherever you go.</div>
+    <div class="letter-line">Every moment I’ve spent with you is a beautiful memory that I cherish in the everlasting frames of my heart.</div>
+    <div class="letter-line">Having a friend like you, and knowing you so closely, is truly one of the best things in my life.</div>
+    <div class="letter-line">A person as understanding, pure-hearted, and kind as you is a blessing to be around.</div>
+    <div class="letter-line">Keep being the strong, inspiring woman you’ve always been.</div>
+    <div class="letter-line">I pray to God that all your goals come true very soon, I truly believe in you.</div>
+    <div class="letter-line">Don’t forget that this guy will always be by your side and with you no matter what!</div>
+    <div class="letter-line">Here’s to a happy 23, and many more exciting, beautiful years to come! 💫</div>
+  </div>
+
+  <div class="carousel-container">
+    <span class="arrow" onclick="rotateCarousel(-1)">&#8592;</span>
+    <div class="carousel-3d" id="carousel3d">
+      <img src="img1.jpg" class="carousel-item">
+      <img src="img2.jpg" class="carousel-item">
+      <img src="img3.jpg" class="carousel-item">
+      <img src="img4.jpg" class="carousel-item">
+      <img src="img5.jpg" class="carousel-item">
+    </div>
+    <span class="arrow" onclick="rotateCarousel(1)">&#8594;</span>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<script src="https://unpkg.com/flipdown@0.3.2/dist/flipdown.min.js"></script>
+<script>
+  const cake = document.getElementById('cake');
+  const mainContent = document.getElementById('mainContent');
+  const confettiCanvas = document.getElementById('confetti-canvas');
+  const countdown = document.getElementById('countdown');
+  const overlay = document.getElementById('overlay');
+  const password = "seethu2304";
+
+  function checkPassword() {
+    const input = document.getElementById('passwordInput').value;
+    const error = document.getElementById('error');
+    if (input === password) {
+      overlay.style.display = 'none';
+      countdown.style.display = 'block';
+      startBirthdayPage();
+    } else {
+      error.textContent = "Oops! Wrong password.";
+    }
+  }
+
+  function startBirthdayPage() {
+    const targetDate = new Date("2025-04-23T00:00:00");
+    const targetTimestamp = Math.floor(targetDate.getTime() / 1000);
+
+    new FlipDown(targetTimestamp, 'flipdown')
+      .start()
+      .ifEnded(() => {
+        confettiCanvas.style.display = 'block';
+        confetti({ particleCount: 200, spread: 70, origin: { y: 0.6 } });
+        cake.style.display = 'block';
+        setTimeout(() => {
+          document.body.classList.remove('timer-background');
+          document.body.style.background = "url('celebration-background.jpg') no-repeat center center fixed";
+          document.body.style.backgroundSize = "cover";
+          countdown.style.display = 'none';
+          confettiCanvas.style.display = 'none';
+          mainContent.style.display = 'block';
+        }, 3000);
+      });
+  }
+
+  const carouselItems = document.querySelectorAll(".carousel-item");
+  let activeIndex = 0;
+
+  function updateCarousel() {
+    carouselItems.forEach((img, i) => {
+      img.classList.remove("active", "left", "right");
+      if (i === activeIndex) {
+        img.classList.add("active");
+      } else if (i === (activeIndex - 1 + carouselItems.length) % carouselItems.length) {
+        img.classList.add("left");
+      } else if (i === (activeIndex + 1) % carouselItems.length) {
+        img.classList.add("right");
+      }
+    });
+  }
+
+  function rotateCarousel(dir) {
+    activeIndex = (activeIndex + dir + carouselItems.length) % carouselItems.length;
+    updateCarousel();
+  }
+
+  updateCarousel();
+  setInterval(() => rotateCarousel(1), 5000); // Auto-rotate
+</script>
+
+</body>
+</html>
